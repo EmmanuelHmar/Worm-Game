@@ -6,17 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Worm {
-    private List<Piece> wormPieces = new ArrayList<>();
-    private Piece growthPiece;
+    private List<Piece> wormPieces;
     private int headX, headY;
-    private int matureLength = 1;
     private Direction direction;
+    private boolean wormGrows;
 
     public Worm(int originalX, int originalY, Direction originalDirection) {
         headX = originalX;
         headY = originalY;
         Piece piece = new Piece(originalX, originalY);
         this.direction = originalDirection;
+        this.wormPieces = new ArrayList<>();
         wormPieces.add(piece);
     }
 
@@ -25,12 +25,11 @@ public class Worm {
     }
 
     public void setDirection(Direction dir) {
-        //Worm starts to move in the new direction when move is called again
         this.direction = dir;
     }
 
     public int getLength() {
-        return getPieces().size();
+        return wormPieces.size();
     }
 
     public List<Piece> getPieces() {
@@ -38,57 +37,55 @@ public class Worm {
     }
 
     public void move() {
-
-        if (growthPiece != null && !wormPieces.contains(growthPiece)) {
-            wormPieces.add(growthPiece);
-            return;
+        if (wormPieces.size() < 3) {
+            grow();
         }
+            moveWorm();
 
-        if (matureLength < 3) {
-            wormPieces.add(new Piece(getXDirection(), getYDirection()));
-//            if (direction == Direction.RIGHT) {
-//                wormPieces.add(new Piece(++headX, headY));
-//            } else if (direction == Direction.LEFT) {
-//                wormPieces.add(new Piece(--headX, headY));
-//            } else if (direction == Direction.UP) {
-//                wormPieces.add(new Piece(headX, --headY));
-//            } else if (direction == Direction.DOWN) {
-//                wormPieces.add(new Piece(getXDirection(), getYDirection()));
-//            }
-//
-            matureLength++;
+        if (!wormGrows) {
+            wormPieces.remove(0);
         } else {
-            if (direction == Direction.RIGHT) {
-                moveWormRight();
-            } else if (direction == Direction.LEFT) {
-                moveWormLeft();
-            } else if (direction == Direction.UP || direction == Direction.DOWN) {
-                moveWormUpOrDown();
-            }
+            wormGrows = false;
         }
     }
 
     public void grow() {
-
-        growthPiece = new Piece(getXDirection(), getYDirection());
-
+    wormGrows = true;
     }
 
     public boolean runsInto(Piece piece) {
-        return headX == piece.getX() && headY == piece.getY();
+        for (Piece worm : wormPieces) {
+            if (piece.getX() == worm.getX() && piece.getY() == worm.getY()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean runsIntoItself() {
-        int length = 0;
-        for (Piece x : wormPieces) {
-            if (length == wormPieces.size() - 1) {
-                break;
-            }
+        List<Piece> testPieces = new ArrayList<>();
 
-            if (this.headX == x.getX() && headY == x.getY()) {
-                return true;
+        for (int i = 0; i < wormPieces.size() - 1; i++) {
+            testPieces.add(wormPieces.get(i));
+        }
+
+        try {
+            for (Piece worm : testPieces) {
+                for (Piece W : testPieces) {
+                    if (W == worm) {
+                        continue;
+                    }
+                    if (worm.getX() == headX && worm.getY() == headY) {
+                        return true;
+                    }
+
+                    if (W.getX() == worm.getX() && W.getY() == worm.getY()) {
+                        return true;
+                    }
+                }
             }
-            length++;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return false;
@@ -117,18 +114,16 @@ public class Worm {
         return -1;
     }
 
-    private void moveWormRight() {
-        wormPieces.remove(0);
+    private void moveWorm() {
         wormPieces.add(new Piece(getXDirection(), getYDirection()));
     }
 
-    private void moveWormLeft() {
-        wormPieces.remove(0);
-        wormPieces.add(new Piece(getXDirection(), getYDirection()));
+    public int getHeadX() {
+        return headX;
     }
 
-    private void moveWormUpOrDown() {
-        wormPieces.remove(0);
-        wormPieces.add(new Piece(getXDirection(), getYDirection()));
+    public int getHeadY() {
+        return headY;
     }
+
 }
